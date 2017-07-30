@@ -1,0 +1,2 @@
+# subXMonad
+Configuration for XMonad
