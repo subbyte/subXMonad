@@ -1,6 +1,6 @@
 # subXMonad
 
-Configuration for XMonad. Keep it simple, stupid (KISS): focusing on window management, no status bar, no trayer.
+Configuration for XMonad with the KISS principle in mind: focusing on window management, no status bar, no trayer.
 
 #### My Needs
 - Working in office:
