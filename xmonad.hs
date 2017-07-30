@@ -1,16 +1,17 @@
 --------------------------------------------------------------------------------
 -- File   : ~/.xmonad/xmonad.hs                                               --
 -- Author : Xiaokui Shu <xiaokui.shu@ibm.com>                                 --
--- Update : 2017/07/29
+-- Xmonad : 0.13                                                              --
+-- Update : 2017/07/29                                                        --
 --                                                                            --
--- Multi-head Behavior                                                        --
---   | start with only one screen: ws#1 on screen 0                           --
---   | start with multi-screens: ws#i on screen i                             --
---   | rescreen from one to two screens: ws#g on the second screen            --
+-- Multi-Screen (Multi-Head) Behavior                                         --
+--   | start with only one screen       : ws#1 on screen 0                    --
+--   | start with multi-screens         : ws#i on screen i | i <- [0..]       --
+--   | rescreen from one to two screens : ws#g on the 2nd screen              --
 --   where                                                                    --
 --     workspaces = [ws#0 .. ws#9, ws#g]                                      --
 --     shiftkeys  = [xK_0 .. xK_9, xK_grave]                                  --
---     ws#g is reserved empty for second screen                               --
+--     ws#g (usually empty) is the reserved workspace for the 2nd screen      --
 --------------------------------------------------------------------------------
 
 import Data.Ratio ((%))
