@@ -33,6 +33,7 @@ Configuration for XMonad with the KISS principle in mind: focusing on window man
 #### Complementary Utilities
 - urxvt (conf: https://github.com/subbyte/configurations/tree/master/urxvt)
 - gvim (conf: https://github.com/subbyte/configurations/tree/master/vim)
+- dmenu
 - zathura
 - firefox w/ vimFx
 - chromium w/ vimium
