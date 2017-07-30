@@ -192,7 +192,7 @@ cmdSetWallpaper :: String
 cmdSetWallpaper = "feh --bg-fill ~/wallpaper/paine.jpg"
 
 --------------------------------------------------------------------------------
--- Auto startup                                                               --
+-- Auto Startup                                                               --
 --------------------------------------------------------------------------------
 
 myStartupHook :: (Integral i) => i -> X ()
