@@ -2,7 +2,7 @@
 
 Configuration for XMonad with the KISS principle in mind: focusing on window management, no status bar, no trayer.
 
-#### My Needs
+#### Screen Management Requirements
 - Working in office:
   - environment: laptop with one external monitor, and work is majorly done on the external monitor
   - requirement: the external monitor should have the workspace associated with `mod+1` when booted
@@ -24,11 +24,19 @@ Configuration for XMonad with the KISS principle in mind: focusing on window man
   - the laptop screen gets the workspace associated with `mod+0`
 - New screen plugged in (`XF86_Display` pressed, presentation with extended display)
   - the workspace keeps unchanged on the laptop
-  - the new screen gets the workspace associated with `` mod+` ``
+  - the new screen gets the workspace associated with ``mod+` ``
 - New screen plugged in (`XF86_Display+Shift` pressed, presentation with mirror display)
   - the current workspace is shown on both the laptop and the external screen
 - External screen plugged out (`XF86_Display` pressed)
   - the most recently focused workspace is shown on the laptop screen
+
+#### Window Management Requirements
+- List windows:
+  - requirement: list all existing windows, the ability to goto a window is a plus
+
+#### Window Management Setup
+- List windows:
+  - show existing windows to choose/goto with `mod+g`
 
 #### Complementary Utilities
 - urxvt (conf: https://github.com/subbyte/configurations/tree/master/urxvt)

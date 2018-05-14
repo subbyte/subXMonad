@@ -31,6 +31,7 @@ import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig (removeKeys, additionalKeys)
 import XMonad.Layout.IndependentScreens (countScreens)
 import XMonad.Actions.Warp (warpToScreen)
+import XMonad.Actions.WindowBringer (gotoMenu)
 import XMonad.Hooks.ManageHelpers ( composeOne
                                   , (-?>)
                                   , isFullscreen
@@ -135,6 +136,7 @@ myComboMap =
     [ ((myModMask               , xK_Return), spawn myTerminal)
     , ((myModMask .|. shiftMask , xK_Return), windows W.swapMaster)
     , ((myModMask               , xK_r), spawn "dmenu_run")
+    , ((myModMask               , xK_g), gotoMenu)
     ] 
 
 --------------------------------------------------------------------------------
