@@ -202,7 +202,8 @@ cmdSetWallpaper = "feh --bg-fill ~/wallpaper/paine.jpg"
 
 myStartupHook :: (Integral i) => i -> X ()
 myStartupHook scrCnt = do
-    spawn "xbacklight -set 75"
     spawn "xset s off -dpms"
+    -- spawn "xbacklight -set 75"
+    -- spawn "nm-applet"
     spawn cmdSetWallpaper
     when (scrCnt == 1) (windows $ W.greedyView wsOne)
