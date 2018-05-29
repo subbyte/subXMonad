@@ -163,10 +163,10 @@ myShortcutKeyMap =
 --------------------------------------------------------------------------------
 
 cmdXrandrExt :: String
-cmdXrandrExt = "~/.xmonad/display-extended.sh"
+cmdXrandrExt = "~/.xmonad/displaymgt.sh"
 
 cmdXrandrMir :: String
-cmdXrandrMir = "~/.xmonad/display-mirror.sh"
+cmdXrandrMir = "~/.xmonad/displaymgt.sh --mirror"
 
 rescreenExt :: X ()
 rescreenExt = do
