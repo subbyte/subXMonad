@@ -15,10 +15,10 @@
 ################################################################
 
 # all connected displays
-DISPCONN=($(xrandr | awk '$2 == "connected" {print $1}'))
+DISPCONN=($(xrandr -q | awk '$2 == "connected" {print $1}'))
 
 # all disconnected displays
-DISPDISCONN=($(xrandr | awk '$2 == "disconnected" {print $1}'))
+DISPDISCONN=($(xrandr -q | awk '$2 == "disconnected" {print $1}'))
 
 # laptop display
 DISPLP=${DISPCONN[0]}
