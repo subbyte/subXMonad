@@ -2,7 +2,7 @@
 -- File   : ~/.xmonad/xmonad.hs                                               --
 -- Author : Xiaokui Shu <xiaokui.shu@ibm.com>                                 --
 -- Xmonad : 0.13                                                              --
--- Update : 2018/05/16                                                        --
+-- Update : 2018/08/21                                                        --
 --                                                                            --
 -- Multi-Screen (Multi-Head) Behavior                                         --
 --   | start with only one screen       : ws#1 on screen 0                    --
@@ -35,10 +35,12 @@ import XMonad.Util.EZConfig (removeKeys, additionalKeys)
 import XMonad.Layout.IndependentScreens (countScreens)
 import XMonad.Actions.Warp (warpToScreen)
 import XMonad.Actions.WindowBringer (gotoMenu)
+import XMonad.Util.WindowProperties (Property (..), propertyToQuery)
 import XMonad.Hooks.ManageHelpers ( composeOne
                                   , (-?>)
                                   , isFullscreen
                                   , doFullFloat
+                                  , doRectFloat
                                   )
 
 --------------------------------------------------------------------------------
@@ -185,6 +187,8 @@ rescreenMir = spawn $ cmdXrandrMir ++ ";" ++ cmdSetWallpaper
 myManageHook :: ManageHook
 myManageHook = composeAll
     [ className =? "MPlayer" --> doFloat
+    , propertyToQuery (Role "GtkFileChooserDialog")
+        --> doRectFloat (W.RationalRect (1 % 4) (1 % 4) (1 % 2) (1 % 2))
     ]
     <+>
     composeOne [ isFullscreen -?> doFullFloat ] -- Fix fullscreen issue
