@@ -17,7 +17,6 @@
 --   | modMask + g => list existing windows for switching                     --
 --------------------------------------------------------------------------------
 
-import Data.Ratio ((%))
 import Control.Monad (when)
 import Graphics.X11.ExtraTypes.XF86 ( xF86XK_MonBrightnessUp
                                     , xF86XK_MonBrightnessDown
@@ -52,6 +51,12 @@ myModMask = mod1Mask
 
 myTerminal :: String
 myTerminal = "/usr/bin/urxvt"
+
+fconsoleName :: String
+fconsoleName = "fconsole"
+
+floatingConsole :: String
+floatingConsole = myTerminal ++ " -name " ++ fconsoleName
 
 main :: IO ()
 main = do
@@ -123,7 +128,7 @@ myScreenKeyMap =
     [ ( (m .|. myModMask, key), do
         ws <- screenWorkspace sc
         whenJust ws (windows . f)
-        warpToScreen sc (618%1000) (618%1000) -- additional mouse operation
+        warpToScreen sc 0.618 0.618 -- additional mouse operation
       )
         | (key, sc) <- zip [xK_w, xK_e] [0..]
         , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]
@@ -140,6 +145,7 @@ myComboMap :: [((KeyMask, KeySym), X ())]
 myComboMap =
     [ ((myModMask               , xK_Return), spawn myTerminal)
     , ((myModMask .|. shiftMask , xK_Return), windows W.swapMaster)
+    , ((myModMask               , xK_c), spawn floatingConsole)
     , ((myModMask               , xK_r), spawn "dmenu_run")
     , ((myModMask               , xK_g), gotoMenu)
     ] 
@@ -187,8 +193,12 @@ rescreenMir = spawn $ cmdXrandrMir ++ ";" ++ cmdSetWallpaper
 myManageHook :: ManageHook
 myManageHook = composeAll
     [ className =? "MPlayer" --> doFloat
+    -- floating console
+    , appName =? fconsoleName
+        --> doRectFloat (W.RationalRect 0.191 0.86 0.618 0.12)
+    -- resize and float all dialog window
     , propertyToQuery (Role "GtkFileChooserDialog")
-        --> doRectFloat (W.RationalRect (1 % 4) (1 % 4) (1 % 2) (1 % 2))
+        --> doRectFloat (W.RationalRect 0.25 0.25 0.5 0.5)
     ]
     <+>
     composeOne [ isFullscreen -?> doFullFloat ] -- Fix fullscreen issue
