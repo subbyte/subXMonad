@@ -15,6 +15,7 @@
 --                                                                            --
 -- Additional Window Management                                               --
 --   | modMask + g => list existing windows for switching                     --
+--   | modMask + c => start a floating console                                --
 --------------------------------------------------------------------------------
 
 import Control.Monad (when)
