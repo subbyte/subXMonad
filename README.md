@@ -33,16 +33,20 @@ Configuration for XMonad with the KISS principle in mind: focusing on window man
 #### Window Management Requirements
 - List windows:
   - requirement: list all existing windows, the ability to goto a window is a plus
+- Floating console:
+  - requirement: a small floating console for quick cmdline access
 
 #### Window Management Setup
 - List windows:
   - show existing windows to choose/goto with `mod+g`
+- Floating console:
+  - create one on the bottom of the screen with `mod+c`
 
 #### Complementary Utilities
 - urxvt (conf: https://github.com/subbyte/configurations/tree/master/urxvt)
 - gvim (conf: https://github.com/subbyte/configurations/tree/master/vim)
 - dmenu
 - zathura
-- firefox w/ vimFx
+- firefox w/ vimium
 - chromium w/ vimium
 - i3lock
