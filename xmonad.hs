@@ -57,7 +57,9 @@ fconsoleName :: String
 fconsoleName = "fconsole"
 
 floatingConsole :: String
-floatingConsole = myTerminal ++ " -name " ++ fconsoleName
+floatingConsole =  myTerminal
+                ++ " -name " ++ fconsoleName
+                ++ " -e bash --rcfile /home/subx/.bashrc_console"
 
 main :: IO ()
 main = do
@@ -196,7 +198,7 @@ myManageHook = composeAll
     [ className =? "MPlayer" --> doFloat
     -- floating console
     , appName =? fconsoleName
-        --> doRectFloat (W.RationalRect 0.191 0.86 0.618 0.12)
+        --> doRectFloat (W.RationalRect 0.191 0.86 0.618 0.10)
     -- resize and float all dialog window
     , propertyToQuery (Role "GtkFileChooserDialog")
         --> doRectFloat (W.RationalRect 0.25 0.25 0.5 0.5)
