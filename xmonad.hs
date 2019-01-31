@@ -2,7 +2,7 @@
 -- File   : ~/.xmonad/xmonad.hs                                               --
 -- Author : Xiaokui Shu <xiaokui.shu@ibm.com>                                 --
 -- Xmonad : 0.13                                                              --
--- Update : 2018/08/21                                                        --
+-- Update : 2019/01/31                                                        --
 --                                                                            --
 -- Multi-Screen (Multi-Head) Behavior                                         --
 --   | start with only one screen       : ws#1 on screen 0                    --
@@ -36,12 +36,10 @@ import XMonad.Layout.IndependentScreens (countScreens)
 import XMonad.Actions.Warp (warpToScreen)
 import XMonad.Actions.WindowBringer (gotoMenu)
 import XMonad.Util.WindowProperties (Property (..), propertyToQuery)
-import XMonad.Hooks.ManageHelpers ( composeOne
-                                  , (-?>)
-                                  , isFullscreen
-                                  , doFullFloat
-                                  , doRectFloat
-                                  )
+import XMonad.Layout.Fullscreen ( fullscreenEventHook
+                                , fullscreenManageHook
+                                , fullscreenSupport)
+import XMonad.Hooks.ManageHelpers (doRectFloat)
 
 --------------------------------------------------------------------------------
 -- MAIN                                                                       --
@@ -64,7 +62,7 @@ floatingConsole =  myTerminal
 main :: IO ()
 main = do
     screenCnt <- countScreens
-    xmonad $ def
+    xmonad $ fullscreenSupport $ def
         { terminal              = myTerminal
         , borderWidth           = 4
         , normalBorderColor     = "#222222"
@@ -204,7 +202,7 @@ myManageHook = composeAll
         --> doRectFloat (W.RationalRect 0.25 0.25 0.5 0.5)
     ]
     <+>
-    composeOne [ isFullscreen -?> doFullFloat ] -- Fix fullscreen issue
+    fullscreenManageHook -- new fullscreen solution
 
 --------------------------------------------------------------------------------
 -- Wallpaper                                                                  --
