@@ -164,7 +164,7 @@ myShortcutKeyMap =
     , ((0, xF86XK_AudioLowerVolume)     , spawn "amixer set Master 2%-")
     , ((0           , xF86XK_Display)   , rescreenExt)
     , ((shiftMask   , xF86XK_Display)   , rescreenMir)
-    , ((0, xF86XK_ScreenSaver)          , spawn "i3lock -c 000000 -n")
+    , ((0, xF86XK_ScreenSaver)          , spawn "i3lock -c 000000 -n -u -e")
     ]
 
 --------------------------------------------------------------------------------
@@ -217,8 +217,8 @@ cmdSetWallpaper = "feh --bg-fill ~/wallpaper/paine.jpg"
 
 myStartupHook :: (Integral i) => i -> X ()
 myStartupHook scrCnt = do
+    -- spawn "xrdb ~/.Xresources"
     spawn "xset s off -dpms"
-    -- spawn "xbacklight -set 75"
     -- spawn "nm-applet"
     spawn cmdSetWallpaper
     when (scrCnt == 1) (windows $ W.greedyView wsOne)
