@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
 -- File   : ~/.xmonad/xmonad.hs                                               --
 -- Author : Xiaokui Shu <xiaokui.shu@ibm.com>                                 --
--- Xmonad : 0.13                                                              --
--- Update : 2019/01/31                                                        --
+-- Xmonad : 0.15                                                              --
+-- Update : 2019/02/08                                                        --
 --                                                                            --
 -- Multi-Screen (Multi-Head) Behavior                                         --
 --   | start with only one screen       : ws#1 on screen 0                    --
