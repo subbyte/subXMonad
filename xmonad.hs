@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
 -- File   : ~/.xmonad/xmonad.hs                                               --
--- Author : Xiaokui Shu <xiaokui.shu@ibm.com>                                 --
+-- Author : Xiaokui Shu                                                       --
 -- Xmonad : 0.15                                                              --
--- Update : 2019/02/08                                                        --
+-- Update : 2019/04/29                                                        --
 --                                                                            --
 -- Multi-Screen (Multi-Head) Behavior                                         --
 --   | start with only one screen       : ws#1 on screen 0                    --
@@ -217,7 +217,6 @@ cmdSetWallpaper = "feh --bg-fill ~/wallpaper/paine.jpg"
 
 myStartupHook :: (Integral i) => i -> X ()
 myStartupHook scrCnt = do
-    -- spawn "xrdb ~/.Xresources"
     spawn "xset s off -dpms"
     -- spawn "nm-applet"
     spawn cmdSetWallpaper
