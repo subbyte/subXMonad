@@ -131,7 +131,7 @@ myScreenKeyMap =
         whenJust ws (windows . f)
         warpToScreen sc 0.618 0.618 -- additional mouse operation
       )
-        | (key, sc) <- zip [xK_w, xK_e] [0..]
+        | (key, sc) <- zip [xK_e, xK_w] [0..]
         , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]
     ]
 
