@@ -30,6 +30,7 @@ import Graphics.X11.ExtraTypes.XF86 ( xF86XK_MonBrightnessUp
                                     , xF86XK_AudioRaiseVolume
                                     , xF86XK_AudioLowerVolume
                                     , xF86XK_Display
+                                    , xF86XK_Tools
                                     , xF86XK_ScreenSaver
                                     )
 
@@ -181,6 +182,7 @@ myShortcutKeyMap =
     , ((0, xF86XK_AudioLowerVolume)     , spawn "amixer set Master 2%-")
     , ((0           , xF86XK_Display)   , rescreenExt)
     , ((shiftMask   , xF86XK_Display)   , rescreenMir)
+    , ((0, xF86XK_Tools)                , spawn "pavucontrol -t 3")
     , ((0, xF86XK_ScreenSaver)          , spawn "xsecurelock")
     ]
 
