@@ -225,8 +225,11 @@ myManageHook = composeAll
     -- no border for following windows
     -- use `xprop` to find window className
     , className =? "firefox" --> defineBorderWidth 0
+    , className =? "Firefox" --> defineBorderWidth 0
     , className =? "Google-chrome" --> defineBorderWidth 0
+    , className =? "Microsoft-edge" --> defineBorderWidth 0
     , className =? "Chromium" --> defineBorderWidth 0
+    , className =? "Chromium-browser" --> defineBorderWidth 0
     , className =? "Opera" --> defineBorderWidth 0
     , className =? "mpv" --> defineBorderWidth 0
     , className =? "feh" --> defineBorderWidth 0
