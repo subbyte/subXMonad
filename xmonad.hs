@@ -2,7 +2,7 @@
 -- File   : ~/.xmonad/xmonad.hs                                               --
 -- Author : Xiaokui Shu                                                       --
 -- Xmonad : 0.15                                                              --
--- Update : 2022/01/07                                                        --
+-- Update : 2022/01/09                                                        --
 --                                                                            --
 -- Multi-Screen (Multi-Head) Behavior                                         --
 --   | start with only one screen       : ws#1 on screen 0                    --
@@ -22,6 +22,7 @@
 --   | className =? "Chromium" --> defineBorderWidth 0                        --
 --------------------------------------------------------------------------------
 
+import Data.Map (Map)
 import Data.Monoid (All)
 import Control.Monad (when)
 import Graphics.X11.ExtraTypes.XF86 ( xF86XK_MonBrightnessUp
@@ -37,7 +38,7 @@ import Graphics.X11.ExtraTypes.XF86 ( xF86XK_MonBrightnessUp
 import XMonad
 import qualified XMonad.StackSet as W
 
-import XMonad.Util.EZConfig (removeKeys, additionalKeys)
+import XMonad.Util.CustomKeys (customKeys)
 import XMonad.Layout.IndependentScreens (countScreens)
 import XMonad.Actions.Warp (warpToScreen)
 import XMonad.Actions.WindowBringer (gotoMenu)
@@ -80,17 +81,11 @@ main = do
         , handleEventHook       = myDynamicManageHook
         , workspaces            = myWorkspaces
         , modMask               = myModMask
+        , keys                  = myKeyMaps
         , borderWidth           = 4
         , logHook               = exequeue
         , startupHook           = myStartupHook screenCnt
         }
-        `removeKeys`            defaultWorkspaceKeyMap
-        `removeKeys`            defaultScreenKeyMap
-        `removeKeys`            defaultComboMap
-        `additionalKeys`        myWorkspaceKeyMap
-        `additionalKeys`        myScreenKeyMap
-        `additionalKeys`        myComboMap
-        `additionalKeys`        myShortcutKeyMap
 
 --------------------------------------------------------------------------------
 -- Workspaces                                                                 --
@@ -125,8 +120,22 @@ myWorkspaceKeys = [xK_0 .. xK_9] ++ [xK_grave]
 myLayout = Tall 1 (3/100) (1/2) ||| Mirror (Tall 1 (3/100) (1/2))
 
 --------------------------------------------------------------------------------
--- Operation Changes                                                          --
+-- Key Map Changes                                                          --
 --------------------------------------------------------------------------------
+
+myKeyMaps :: XConfig Layout -> Map (KeyMask, KeySym) (X ())
+myKeyMaps = customKeys (\_ -> removedKeyMaps) (\_ -> insertedKeyMaps)
+
+removedKeyMaps :: [(KeyMask, KeySym)]
+removedKeyMaps =  defaultWorkspaceKeyMap
+               ++ defaultScreenKeyMap
+               ++ defaultOpKeyMap
+
+insertedKeyMaps :: [((KeyMask, KeySym), X ())]
+insertedKeyMaps =  myWorkspaceKeyMap
+                ++ myScreenKeyMap
+                ++ myOpKeyMap
+                ++ myShortcutKeyMap
 
 defaultWorkspaceKeyMap :: [(KeyMask, KeySym)]
 defaultWorkspaceKeyMap =
@@ -153,15 +162,15 @@ myScreenKeyMap =
         , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]
     ]
 
-defaultComboMap :: [(KeyMask, KeySym)]
-defaultComboMap =
+defaultOpKeyMap :: [(KeyMask, KeySym)]
+defaultOpKeyMap =
     [ (mod1Mask                 , xK_Return)
     , (mod1Mask .|. shiftMask   , xK_Return)
     , (mod1Mask                 , xK_p)
     ]
 
-myComboMap :: [((KeyMask, KeySym), X ())]
-myComboMap =
+myOpKeyMap :: [((KeyMask, KeySym), X ())]
+myOpKeyMap =
     [ ((myModMask               , xK_Return), spawn myTerminal)
     , ((myModMask .|. shiftMask , xK_Return), windows W.swapMaster)
     , ((myModMask               , xK_c), spawn floatingConsole)
@@ -169,21 +178,16 @@ myComboMap =
     , ((myModMask               , xK_g), gotoMenu)
     ] 
 
---------------------------------------------------------------------------------
--- Additional Shortcuts                                                       --
---------------------------------------------------------------------------------
-
 myShortcutKeyMap :: [((KeyMask, KeySym), X ())]
 myShortcutKeyMap =
-    [ ((0, xF86XK_MonBrightnessUp)      , spawn "xbacklight -inc 10")
-    , ((0, xF86XK_MonBrightnessDown)    , spawn "xbacklight -dec 10")
-    , ((0, xF86XK_AudioMute)            , spawn "amixer set Master toggle")
-    , ((0, xF86XK_AudioRaiseVolume)     , spawn "amixer set Master 2%+")
-    , ((0, xF86XK_AudioLowerVolume)     , spawn "amixer set Master 2%-")
-    , ((0           , xF86XK_Display)   , rescreenExt)
-    , ((shiftMask   , xF86XK_Display)   , rescreenMir)
-    , ((0, xF86XK_Tools)                , spawn "pavucontrol -t 3")
-    , ((0, xF86XK_ScreenSaver)          , spawn "xsecurelock")
+    [ ((noModMask, xF86XK_MonBrightnessUp)  , spawn "xbacklight -inc 10")
+    , ((noModMask, xF86XK_MonBrightnessDown), spawn "xbacklight -dec 10")
+    , ((noModMask, xF86XK_AudioMute)        , spawn "amixer set Master toggle")
+    , ((noModMask, xF86XK_AudioRaiseVolume) , spawn "amixer set Master 2%+")
+    , ((noModMask, xF86XK_AudioLowerVolume) , spawn "amixer set Master 2%-")
+    , ((noModMask, xF86XK_Display)          , rescreenExt)
+    , ((shiftMask, xF86XK_Display)          , rescreenMir)
+    , ((noModMask, xF86XK_Tools)            , spawn "pavucontrol -t 3")
     ]
 
 --------------------------------------------------------------------------------
