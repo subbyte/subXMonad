@@ -79,10 +79,6 @@ pixels to realize the displayed information multiplier?
 - Floating console:
   - create one on the bottom of the screen with `mod+c`
 
-### Complementary Utilities
+### XMonad Version Compatibility
 
-- urxvt (conf: https://github.com/subbyte/configurations/tree/master/urxvt)
-- gvim (conf: https://github.com/subbyte/configurations/tree/master/vim)
-- zathura
-- firefox w/ vimium
-- chromium w/ vimium
+For XMonad `>=0.17.1`, my libraries `actionQueue` and `BorderPerWindow` have been released in `xmonad-contrib`, and the `xmonad.hs` file works out of the box. For XMonad `==0.15` or `==0.17.0`, one needs to use config in directory `0.15/`, i.e., `cp -r 0.15/* ~/.xmonad/`, to compile.

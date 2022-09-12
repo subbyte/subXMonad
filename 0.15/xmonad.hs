@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
 -- File   : ~/.xmonad/xmonad.hs                                               --
 -- Author : Xiaokui Shu                                                       --
--- Xmonad : 0.17.1                                                              --
--- Update : 2022/09/12                                                        --
+-- Xmonad : 0.15                                                              --
+-- Update : 2022/01/09                                                        --
 --                                                                            --
 -- Multi-Screen (Multi-Head) Behavior                                         --
 --   | start with only one screen       : ws#1 on screen 0                    --
@@ -45,7 +45,11 @@ import XMonad.Actions.WindowBringer (gotoMenu)
 import XMonad.Util.WindowProperties (Property (..), propertyToQuery)
 import XMonad.Hooks.ManageHelpers (doRectFloat)
 import XMonad.Hooks.DynamicProperty (dynamicPropertyChange)
-import XMonad.Hooks.BorderPerWindow (defineBorderWidth, actionQueue)
+
+-- Use this local version before it is released in xmonad-contrib > 0.17.0
+-- https://github.com/xmonad/xmonad-contrib/pull/640
+import BorderPerWindow (defineBorderWidth)
+import ActionQueue (exequeue)
 
 --------------------------------------------------------------------------------
 -- MAIN                                                                       --
@@ -68,7 +72,7 @@ floatingConsole =  myTerminal
 main :: IO ()
 main = do
     screenCnt <- countScreens
-    xmonad $ actionQueue $ def
+    xmonad $ def
         { normalBorderColor     = "#222222"
         , focusedBorderColor    = "#535d6c"
         , terminal              = myTerminal
@@ -79,6 +83,7 @@ main = do
         , modMask               = myModMask
         , keys                  = myKeyMaps
         , borderWidth           = 4
+        , logHook               = exequeue
         , startupHook           = myStartupHook screenCnt
         }
 
