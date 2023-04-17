@@ -27,7 +27,7 @@ DISPLP=${DISPCONN[0]}
 DISPEXT=${DISPCONN[1]}
 
 if [ -n "$DISPEXT" ]; then
-    if [ $1 = "--mirror" ]; then
+    if [[ $1 = "--mirror" ]]; then
 
         # laptop resolution
         RESLP=$(xrandr -q | sed -n "/$DISPLP/{n;p;}" | awk '{print $1}')
