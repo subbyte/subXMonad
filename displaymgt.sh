@@ -10,7 +10,6 @@
 #    Licence: GNU GPL v3.0
 #
 #    Author: Xiaokui Shu
-#    Email: xiaokui.shu@ibm.com
 #
 ################################################################
 
