@@ -6,6 +6,7 @@
 #    
 #    Usage: ./displaymgt.sh             # extended mode
 #           ./displaymgt.sh --mirror    # mirror mode
+#           ./displaymgt.sh --noext     # turn off external
 #
 #    Licence: GNU GPL v3.0
 #
@@ -45,6 +46,10 @@ if [ -n "$DISPEXT" ]; then
 
         # mirror the laptop display using the smaller resolution
         xrandr --output $DISPLP --mode $RESF --output $DISPEXT --mode $RESF --same-as $DISPLP
+
+    elif [[ $1 = "--noext" ]]; then
+        # turn the external screen off
+        xrandr --output $DISPLP --auto --primary --output $DISPEXT --off
     else
         # extended mode
         xrandr --output $DISPLP --auto --primary --output $DISPEXT --auto --right-of $DISPLP

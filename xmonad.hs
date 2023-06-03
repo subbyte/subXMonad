@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
 -- File   : ~/.xmonad/xmonad.hs                                               --
 -- Author : Xiaokui Shu                                                       --
--- Xmonad : 0.17.1                                                              --
--- Update : 2022/09/12                                                        --
+-- Xmonad : 0.17.1                                                            --
+-- Update : 2023/06/02                                                        --
 --                                                                            --
 -- Multi-Screen (Multi-Head) Behavior                                         --
 --   | start with only one screen       : ws#1 on screen 0                    --
@@ -16,6 +16,13 @@
 -- Additional Window Management                                               --
 --   | modMask + g => list existing windows for switching                     --
 --   | modMask + c => start a floating console                                --
+--   | modMask + c => start a floating console                                --
+--                                                                            --
+-- Additional Shortcut                                                        --
+--   |         xF86XK_Display => detect/set external minitors                 --
+--   | Shfit + xF86XK_Display => mirror external minitors                     --
+--   | Ctrl  + xF86XK_Display => turn off external minitors                   --
+--   |         xF86XK_Time    => show time and date                           --
 --                                                                            --
 -- Border Customization For Each Window                                       --
 --   | className =? "firefox" --> defineBorderWidth 0                         --
@@ -25,14 +32,16 @@
 import Data.Map (Map)
 import Data.Monoid (All)
 import Control.Monad (when)
+import Data.Time.LocalTime (getZonedTime)
+import Data.Time.Format (defaultTimeLocale, formatTime)
+import Control.Concurrent (threadDelay)
 import Graphics.X11.ExtraTypes.XF86 ( xF86XK_MonBrightnessUp
                                     , xF86XK_MonBrightnessDown
                                     , xF86XK_AudioMute
                                     , xF86XK_AudioRaiseVolume
                                     , xF86XK_AudioLowerVolume
                                     , xF86XK_Display
-                                    , xF86XK_Tools
-                                    , xF86XK_ScreenSaver
+                                    , xF86XK_Time
                                     )
 
 import XMonad
@@ -42,7 +51,12 @@ import XMonad.Util.CustomKeys (customKeys)
 import XMonad.Layout.IndependentScreens (countScreens)
 import XMonad.Actions.Warp (warpToScreen)
 import XMonad.Actions.WindowBringer (gotoMenu)
-import XMonad.Util.WindowProperties (Property (..), propertyToQuery)
+import XMonad.Util.WindowProperties (Property (Role), propertyToQuery)
+import XMonad.Util.XUtils ( showSimpleWindow
+                          , deleteWindow
+                          , WindowConfig(WindowConfig)
+                          , WindowRect(CenterWindow)
+                          )
 import XMonad.Hooks.ManageHelpers (doRectFloat)
 import XMonad.Hooks.DynamicProperty (dynamicPropertyChange)
 import XMonad.Hooks.BorderPerWindow (defineBorderWidth, actionQueue)
@@ -182,7 +196,8 @@ myShortcutKeyMap =
     , ((noModMask, xF86XK_AudioLowerVolume) , spawn "amixer set Master 2%-")
     , ((noModMask, xF86XK_Display)          , rescreenExt)
     , ((shiftMask, xF86XK_Display)          , rescreenMir)
-    , ((noModMask, xF86XK_Tools)            , spawn "pavucontrol -t 3")
+    , ((controlMask, xF86XK_Display)        , rescreenNoE)
+    , ((noModMask, xF86XK_Time)             , fclock)
     ]
 
 --------------------------------------------------------------------------------
@@ -195,6 +210,9 @@ cmdXrandrExt = "~/.xmonad/displaymgt.sh"
 cmdXrandrMir :: String
 cmdXrandrMir = "~/.xmonad/displaymgt.sh --mirror"
 
+cmdXrandrNoE :: String
+cmdXrandrNoE = "~/.xmonad/displaymgt.sh --noext"
+
 rescreenExt :: X ()
 rescreenExt = do
     wsCurrent <- gets (W.currentTag . windowset)
@@ -204,6 +222,9 @@ rescreenExt = do
 
 rescreenMir :: X ()
 rescreenMir = spawn $ cmdXrandrMir ++ ";" ++ cmdSetWallpaper
+
+rescreenNoE :: X ()
+rescreenNoE = spawn $ cmdXrandrNoE ++ ";" ++ cmdSetWallpaper
 
 --------------------------------------------------------------------------------
 -- Composition Settings                                                       --
@@ -215,7 +236,7 @@ myManageHook = composeAll
 
     -- floating console
     , appName =? fconsoleName
-        --> doRectFloat (W.RationalRect 0.191 0.86 0.618 0.10)
+        --> doRectFloat (W.RationalRect 0.618 0.68 0.26 0.26)
  
     -- resize and float all dialog window
     , propertyToQuery (Role "GtkFileChooserDialog")
@@ -233,6 +254,7 @@ myManageHook = composeAll
     , className =? "mpv" --> defineBorderWidth 0
     , className =? "feh" --> defineBorderWidth 0
     , className =? "VirtualBox Manager" --> defineBorderWidth 0
+    , appName   =? fconsoleName --> defineBorderWidth 2
     ]
 
 -- hack to resolve VirtualBox bug (#18042) on delayed WM_NAME assignment
@@ -248,11 +270,38 @@ cmdSetWallpaper :: String
 cmdSetWallpaper = "feh --bg-fill ~/wallpaper/paine.jpg"
 
 --------------------------------------------------------------------------------
+-- Floating Clock                                                             --
+--------------------------------------------------------------------------------
+
+fclock :: X ()
+fclock = do
+    t <- liftIO clockString
+    w <- showSimpleWindow clockWindowConfig [t]
+    refresh
+    liftIO $ threadDelay 1000000
+    deleteWindow w
+
+clockWindowConfig :: WindowConfig
+clockWindowConfig =
+    WindowConfig "xft:monospace-18" "black" "white" CenterWindow
+
+clockString :: IO String
+clockString = do
+    t <- getZonedTime
+    let val = formatTime defaultTimeLocale " %r | %b %d " t
+    return val
+
+--------------------------------------------------------------------------------
 -- Auto Startup                                                               --
 --------------------------------------------------------------------------------
 
 myStartupHook :: (Integral i) => i -> X ()
 myStartupHook scrCnt = do
     spawn "xset s off -dpms"
-    spawn cmdSetWallpaper
+    -- spawn "xsetroot -cursor_name left_ptr"
+
     when (scrCnt == 1) (windows $ W.greedyView wsOne)
+    -- when (scrCnt == 2) rescreenNoE
+    -- windows $ W.greedyView wsOne
+    -- liftIO $ threadDelay 1000000
+    spawn cmdSetWallpaper
