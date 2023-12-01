@@ -299,6 +299,7 @@ myStartupHook :: (Integral i) => i -> X ()
 myStartupHook scrCnt = do
     spawn "xset s off -dpms"
     -- spawn "xsetroot -cursor_name left_ptr"
+    -- spawn "/usr/lib/notification-daemon-1.0/notification-daemon"
 
     when (scrCnt == 1) (windows $ W.greedyView wsOne)
     -- when (scrCnt == 2) rescreenNoE
