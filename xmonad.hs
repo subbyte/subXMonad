@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
 -- File   : ~/.xmonad/xmonad.hs                                               --
 -- Author : Xiaokui Shu                                                       --
--- Xmonad : 0.17.1                                                            --
--- Update : 2023/06/02                                                        --
+-- Xmonad : 0.18.0                                                            --
+-- Update : 2024/02/15                                                        --
 --                                                                            --
 -- Multi-Screen (Multi-Head) Behavior                                         --
 --   | start with only one screen       : ws#1 on screen 0                    --
@@ -58,7 +58,7 @@ import XMonad.Util.XUtils ( showSimpleWindow
                           , WindowRect(CenterWindow)
                           )
 import XMonad.Hooks.ManageHelpers (doRectFloat)
-import XMonad.Hooks.DynamicProperty (dynamicPropertyChange)
+import XMonad.Hooks.OnPropertyChange (onXPropertyChange)
 import XMonad.Hooks.BorderPerWindow (defineBorderWidth, actionQueue)
 
 --------------------------------------------------------------------------------
@@ -259,7 +259,7 @@ myManageHook = composeAll
 
 -- hack to resolve VirtualBox bug (#18042) on delayed WM_NAME assignment
 myDynamicManageHook :: Event -> X All
-myDynamicManageHook = dynamicPropertyChange "WM_NAME"
+myDynamicManageHook = onXPropertyChange "WM_NAME"
     ( className =? "VirtualBox Machine" --> defineBorderWidth 0 )
 
 --------------------------------------------------------------------------------
