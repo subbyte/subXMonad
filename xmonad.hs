@@ -2,7 +2,7 @@
 -- File   : ~/.xmonad/xmonad.hs                                               --
 -- Author : Xiaokui Shu                                                       --
 -- Xmonad : 0.18.0                                                            --
--- Update : 2024/02/15                                                        --
+-- Update : 2025/04/29                                                        --
 --                                                                            --
 -- Multi-Screen (Multi-Head) Behavior                                         --
 --   | start with only one screen       : ws#1 on screen 0                    --
@@ -15,7 +15,6 @@
 --                                                                            --
 -- Additional Window Management                                               --
 --   | modMask + g => list existing windows for switching                     --
---   | modMask + c => start a floating console                                --
 --   | modMask + c => start a floating console                                --
 --                                                                            --
 -- Additional Shortcut                                                        --
@@ -69,14 +68,14 @@ myModMask :: KeyMask
 myModMask = mod1Mask
 
 myTerminal :: String
-myTerminal = "/usr/bin/urxvt"
+myTerminal = "/usr/bin/alacritty"
 
 fconsoleName :: String
 fconsoleName = "fconsole"
 
 floatingConsole :: String
 floatingConsole =  myTerminal
-                ++ " -name " ++ fconsoleName
+                ++ " --title " ++ fconsoleName
                 ++ " -e bash --rcfile ~/.bashrc_console"
 
 main :: IO ()
@@ -235,7 +234,7 @@ myManageHook = composeAll
     [ className =? "MPlayer" --> doFloat
 
     -- floating console
-    , appName =? fconsoleName
+    , title =? fconsoleName
         --> doRectFloat (W.RationalRect 0.618 0.68 0.26 0.26)
  
     -- resize and float all dialog window
@@ -254,7 +253,7 @@ myManageHook = composeAll
     , className =? "mpv" --> defineBorderWidth 0
     , className =? "feh" --> defineBorderWidth 0
     , className =? "VirtualBox Manager" --> defineBorderWidth 0
-    , appName   =? fconsoleName --> defineBorderWidth 2
+    , title     =? fconsoleName --> defineBorderWidth 2
     ]
 
 -- hack to resolve VirtualBox bug (#18042) on delayed WM_NAME assignment
@@ -298,11 +297,12 @@ clockString = do
 myStartupHook :: (Integral i) => i -> X ()
 myStartupHook scrCnt = do
     spawn "xset s off -dpms"
-    -- spawn "xsetroot -cursor_name left_ptr"
-    -- spawn "/usr/lib/notification-daemon-1.0/notification-daemon"
+    spawn "xsetroot -cursor_name left_ptr"
+    spawn "/usr/lib/notification-daemon-1.0/notification-daemon"
 
     when (scrCnt == 1) (windows $ W.greedyView wsOne)
     -- when (scrCnt == 2) rescreenNoE
     -- windows $ W.greedyView wsOne
+
     -- liftIO $ threadDelay 1000000
     spawn cmdSetWallpaper
