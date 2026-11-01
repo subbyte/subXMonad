@@ -2,7 +2,7 @@
 -- File   : ~/.xmonad/xmonad.hs                                               --
 -- Author : Xiaokui Shu                                                       --
 -- Xmonad : 0.18.0                                                            --
--- Update : 2025/04/29                                                        --
+-- Update : 2026/11/01                                                        --
 --                                                                            --
 -- Multi-Screen (Multi-Head) Behavior                                         --
 --   | start with only one screen       : ws#1 on screen 0                    --
@@ -51,7 +51,7 @@ import XMonad.Layout.IndependentScreens (countScreens)
 import XMonad.Actions.Warp (warpToScreen)
 import XMonad.Actions.WindowBringer (gotoMenu)
 import XMonad.Util.WindowProperties (Property (Role), propertyToQuery)
-import XMonad.Util.XUtils ( showSimpleWindow
+import XMonad.Util.XUtils ( withSimpleWindow
                           , deleteWindow
                           , WindowConfig(WindowConfig)
                           , WindowRect(CenterWindow)
@@ -235,7 +235,7 @@ myManageHook = composeAll
 
     -- floating console
     , title =? fconsoleName
-        --> doRectFloat (W.RationalRect 0.618 0.68 0.26 0.26)
+        --> doRectFloat (W.RationalRect 0.618 0.68 0.26 0.18)
  
     -- resize and float all dialog window
     , propertyToQuery (Role "GtkFileChooserDialog")
@@ -275,10 +275,9 @@ cmdSetWallpaper = "feh --bg-fill ~/wallpaper/paine.jpg"
 fclock :: X ()
 fclock = do
     t <- liftIO clockString
-    w <- showSimpleWindow clockWindowConfig [t]
-    refresh
-    liftIO $ threadDelay 1000000
-    deleteWindow w
+    withSimpleWindow clockWindowConfig [t] $ do
+        refresh
+        liftIO $ threadDelay 1000000
 
 clockWindowConfig :: WindowConfig
 clockWindowConfig =
@@ -296,10 +295,6 @@ clockString = do
 
 myStartupHook :: (Integral i) => i -> X ()
 myStartupHook scrCnt = do
-    spawn "xset s off -dpms"
-    spawn "xsetroot -cursor_name left_ptr"
-    spawn "/usr/lib/notification-daemon-1.0/notification-daemon"
-
     when (scrCnt == 1) (windows $ W.greedyView wsOne)
     -- when (scrCnt == 2) rescreenNoE
     -- windows $ W.greedyView wsOne
