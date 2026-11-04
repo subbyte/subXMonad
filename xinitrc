@@ -8,8 +8,5 @@ export PATH="$HOME/.local/bin:$PATH"
 # audio setup
 /usr/bin/gentoo-pipewire-launcher restart &
 
-# notification daemon
-/usr/bin/dunst &
-
 # pipewire-aware xmonad session
 exec /usr/bin/dbus-launch --exit-with-session /usr/bin/xmonad

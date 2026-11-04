@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
 -- File   : ~/.xmonad/xmonad.hs                                               --
 -- Author : Xiaokui Shu                                                       --
--- Xmonad : 0.18.0                                                            --
--- Update : 2026/11/01                                                        --
+-- Xmonad : 0.18.1                                                            --
+-- Update : 2026/11/02                                                        --
 --                                                                            --
 -- Multi-Screen (Multi-Head) Behavior                                         --
 --   | start with only one screen       : ws#1 on screen 0                    --
@@ -18,22 +18,29 @@
 --   | modMask + c => start a floating console                                --
 --                                                                            --
 -- Additional Shortcut                                                        --
---   |         xF86XK_Display => detect/set external minitors                 --
---   | Shfit + xF86XK_Display => mirror external minitors                     --
---   | Ctrl  + xF86XK_Display => turn off external minitors                   --
---   |         xF86XK_Time    => show time and date                           --
+--   |         modMask + r              => dmenu                              --
+--   |         modMask + g              => gotoMenu                           --
+--   |         xF86XK_Display           => detect/set external minitors       --
+--   | Shfit + xF86XK_Display           => mirror external minitors           --
+--   | Ctrl  + xF86XK_Display           => turn off external minitors         --
+--   |         xF86XK_Time              => show time and date                 --
+--   |         xF86XK_AudioMute         => mute/unmute                        --
+--   |         xF86XK_AudioRaiseVolume  => unmute & volume up                 --
+--   |         xF86XK_AudioLowerVolume  => unmute & volume down               --
+--   |         xF86XK_MonBrightnessUp   => brightness up                      --
+--   |         xF86XK_MonBrightnessDown => brightness down                    --
 --                                                                            --
 -- Border Customization For Each Window                                       --
 --   | className =? "firefox" --> defineBorderWidth 0                         --
 --   | className =? "Chromium" --> defineBorderWidth 0                        --
 --------------------------------------------------------------------------------
 
+import Control.Concurrent (threadDelay)
+import Control.Monad (void, when)
 import Data.Map (Map)
 import Data.Monoid (All)
-import Control.Monad (when)
-import Data.Time.LocalTime (getZonedTime)
 import Data.Time.Format (defaultTimeLocale, formatTime)
-import Control.Concurrent (threadDelay)
+import Data.Time.LocalTime (getZonedTime)
 import Graphics.X11.ExtraTypes.XF86 ( xF86XK_MonBrightnessUp
                                     , xF86XK_MonBrightnessDown
                                     , xF86XK_AudioMute
@@ -42,23 +49,26 @@ import Graphics.X11.ExtraTypes.XF86 ( xF86XK_MonBrightnessUp
                                     , xF86XK_Display
                                     , xF86XK_Time
                                     )
-
+import System.FilePath ((</>))
 import XMonad
-import qualified XMonad.StackSet as W
-
-import XMonad.Util.CustomKeys (customKeys)
-import XMonad.Layout.IndependentScreens (countScreens)
 import XMonad.Actions.Warp (warpToScreen)
 import XMonad.Actions.WindowBringer (gotoMenu)
+import XMonad.Core (cfgDir)
+import XMonad.Hooks.BorderPerWindow (actionQueue, defineBorderWidth)
+import XMonad.Hooks.ManageHelpers (doRectFloat)
+import XMonad.Hooks.OnPropertyChange (onXPropertyChange)
+import XMonad.Layout.IndependentScreens (countScreens)
+import qualified XMonad.StackSet as W
+import XMonad.Util.CustomKeys (customKeys)
+import qualified XMonad.Util.ExtensibleState as XS
+import XMonad.Util.Run (runProcessWithInput, safeSpawn)
+import XMonad.Util.Timer (TimerId, handleTimer, startTimer)
 import XMonad.Util.WindowProperties (Property (Role), propertyToQuery)
-import XMonad.Util.XUtils ( withSimpleWindow
+import XMonad.Util.XUtils ( showSimpleWindow
                           , deleteWindow
                           , WindowConfig(WindowConfig)
                           , WindowRect(CenterWindow)
                           )
-import XMonad.Hooks.ManageHelpers (doRectFloat)
-import XMonad.Hooks.OnPropertyChange (onXPropertyChange)
-import XMonad.Hooks.BorderPerWindow (defineBorderWidth, actionQueue)
 
 --------------------------------------------------------------------------------
 -- MAIN                                                                       --
@@ -70,13 +80,17 @@ myModMask = mod1Mask
 myTerminal :: String
 myTerminal = "/usr/bin/alacritty"
 
+wallpaperFile :: String
+wallpaperFile = "wallpaper.jpg"
+
+displaymgtScript :: String
+displaymgtScript = "displaymgt.sh"
+
+volumectlScript :: String
+volumectlScript = "volumectl.sh"
+
 fconsoleName :: String
 fconsoleName = "fconsole"
-
-floatingConsole :: String
-floatingConsole =  myTerminal
-                ++ " --title " ++ fconsoleName
-                ++ " -e bash --rcfile ~/.bashrc_console"
 
 main :: IO ()
 main = do
@@ -87,13 +101,32 @@ main = do
         , terminal              = myTerminal
         , layoutHook            = myLayout
         , manageHook            = myManageHook
-        , handleEventHook       = myDynamicManageHook
+        , handleEventHook       = osdTimerHook <+> myDynamicManageHook
         , workspaces            = myWorkspaces
         , modMask               = myModMask
         , keys                  = myKeyMaps
         , borderWidth           = 4
         , startupHook           = myStartupHook screenCnt
         }
+
+--------------------------------------------------------------------------------
+-- Terminal                                                                   --
+--------------------------------------------------------------------------------
+
+execTerminal :: X ()
+execTerminal = do
+    safeSpawn myTerminal []
+
+execFloatingConsole :: X ()
+execFloatingConsole = do
+    safeSpawn myTerminal $
+        [ "--title"
+        , fconsoleName
+        , "-e"
+        , "bash"
+        , "--rcfile"
+        , "~/.bashrc_console"
+        ]
 
 --------------------------------------------------------------------------------
 -- Workspaces                                                                 --
@@ -179,51 +212,26 @@ defaultOpKeyMap =
 
 myOpKeyMap :: [((KeyMask, KeySym), X ())]
 myOpKeyMap =
-    [ ((myModMask               , xK_Return), spawn myTerminal)
+    [ ((myModMask               , xK_Return), execTerminal)
     , ((myModMask .|. shiftMask , xK_Return), windows W.swapMaster)
-    , ((myModMask               , xK_c), spawn floatingConsole)
-    , ((myModMask               , xK_r), spawn "dmenu_run")
+    , ((myModMask               , xK_c), execFloatingConsole)
+    , ((myModMask               , xK_r), safeSpawn "dmenu_run" [])
     , ((myModMask               , xK_g), gotoMenu)
     ] 
 
 myShortcutKeyMap :: [((KeyMask, KeySym), X ())]
 myShortcutKeyMap =
-    [ ((noModMask, xF86XK_MonBrightnessUp)  , spawn "xbacklight -inc 10")
-    , ((noModMask, xF86XK_MonBrightnessDown), spawn "xbacklight -dec 10")
-    , ((noModMask, xF86XK_AudioMute)        , spawn "amixer set Master toggle")
-    , ((noModMask, xF86XK_AudioRaiseVolume) , spawn "amixer set Master 2%+")
-    , ((noModMask, xF86XK_AudioLowerVolume) , spawn "amixer set Master 2%-")
+    [ ((noModMask, xF86XK_MonBrightnessUp)  , safeSpawn "xbacklight" ["-inc", "10"])
+    , ((noModMask, xF86XK_MonBrightnessDown), safeSpawn "xbacklight" ["-dec", "10"])
+    , ((noModMask, xF86XK_AudioMute)        , volumeControl VolMute)
+    , ((noModMask, xF86XK_AudioRaiseVolume) , volumeControl VolUp)
+    , ((noModMask, xF86XK_AudioLowerVolume) , volumeControl VolDown)
     , ((noModMask, xF86XK_Display)          , rescreenExt)
     , ((shiftMask, xF86XK_Display)          , rescreenMir)
     , ((controlMask, xF86XK_Display)        , rescreenNoE)
     , ((noModMask, xF86XK_Time)             , fclock)
+    , ((noModMask, xK_Super_L)              , fclock)
     ]
-
---------------------------------------------------------------------------------
--- Multi-Screen                                                               --
---------------------------------------------------------------------------------
-
-cmdXrandrExt :: String
-cmdXrandrExt = "~/.xmonad/displaymgt.sh"
-
-cmdXrandrMir :: String
-cmdXrandrMir = "~/.xmonad/displaymgt.sh --mirror"
-
-cmdXrandrNoE :: String
-cmdXrandrNoE = "~/.xmonad/displaymgt.sh --noext"
-
-rescreenExt :: X ()
-rescreenExt = do
-    wsCurrent <- gets (W.currentTag . windowset)
-    windows $ W.greedyView wsGrave
-    windows $ W.greedyView wsCurrent
-    spawn   $ cmdXrandrExt ++ ";" ++ cmdSetWallpaper
-
-rescreenMir :: X ()
-rescreenMir = spawn $ cmdXrandrMir ++ ";" ++ cmdSetWallpaper
-
-rescreenNoE :: X ()
-rescreenNoE = spawn $ cmdXrandrNoE ++ ";" ++ cmdSetWallpaper
 
 --------------------------------------------------------------------------------
 -- Composition Settings                                                       --
@@ -262,11 +270,31 @@ myDynamicManageHook = onXPropertyChange "WM_NAME"
     ( className =? "VirtualBox Machine" --> defineBorderWidth 0 )
 
 --------------------------------------------------------------------------------
--- Wallpaper                                                                  --
+-- On-Screen Display State                                                    --
 --------------------------------------------------------------------------------
 
-cmdSetWallpaper :: String
-cmdSetWallpaper = "feh --bg-fill ~/wallpaper/paine.jpg"
+data OSDState = OSDState (Maybe (TimerId, Window))
+
+instance ExtensionClass OSDState where
+    initialValue = OSDState Nothing
+
+osdTimerHook :: Event -> X All
+osdTimerHook e = do
+    OSDState mActive <- XS.get
+    whenJust mActive $ \(tid, win) -> 
+        void $ handleTimer tid e $ do
+            deleteWindow win
+            XS.put $ OSDState Nothing
+            return Nothing
+    return mempty
+
+flashOSD :: WindowConfig -> String -> Rational -> X ()
+flashOSD config message duration = do
+    OSDState mActive <- XS.get
+    whenJust mActive $ \(_, oldWin) -> deleteWindow oldWin
+    win <- showSimpleWindow config [message]
+    tid <- startTimer duration
+    XS.put $ OSDState $ Just (tid, win)
 
 --------------------------------------------------------------------------------
 -- Floating Clock                                                             --
@@ -274,20 +302,83 @@ cmdSetWallpaper = "feh --bg-fill ~/wallpaper/paine.jpg"
 
 fclock :: X ()
 fclock = do
-    t <- liftIO clockString
-    withSimpleWindow clockWindowConfig [t] $ do
-        refresh
-        liftIO $ threadDelay 1000000
-
-clockWindowConfig :: WindowConfig
-clockWindowConfig =
-    WindowConfig "xft:monospace-18" "black" "white" CenterWindow
+    time <- liftIO clockString
+    flashOSD clockWindowConfig time 1
+    where
+      clockWindowConfig =
+          WindowConfig "xft:monospace-18" "black" "white" CenterWindow
 
 clockString :: IO String
 clockString = do
     t <- getZonedTime
     let val = formatTime defaultTimeLocale " %r | %b %d " t
     return val
+
+--------------------------------------------------------------------------------
+-- Volume Control                                                             --
+--------------------------------------------------------------------------------
+
+volumectlCmd :: X String
+volumectlCmd = do
+    configDir <- asks (cfgDir . directories)
+    return (configDir </> volumectlScript)
+
+data VolAction = VolUp | VolDown | VolMute
+
+volumeControl :: VolAction -> X ()
+volumeControl action = do
+    cmd <- volumectlCmd
+    volume <- runProcessWithInput cmd [arg] ""
+    flashOSD volumeWindowConfig (" " ++ volume ++ " ") 0.4
+    where
+      arg = case action of
+        VolUp   -> "+"
+        VolDown -> "-"
+        VolMute -> "m"
+      volumeWindowConfig =
+          WindowConfig "xft:monospace-18" "#cccccc" "#333333" CenterWindow
+
+--------------------------------------------------------------------------------
+-- Multi-Screen                                                               --
+--------------------------------------------------------------------------------
+
+displaymgtCmd :: X String
+displaymgtCmd = do
+    configDir <- asks (cfgDir . directories)
+    return (configDir </> displaymgtScript)
+
+rescreenExt :: X ()
+rescreenExt = do
+    wsCurrent <- gets (W.currentTag . windowset)
+
+    -- prepare workspace order so the new screen gets wsGrave
+    windows $ W.greedyView wsGrave
+    windows $ W.greedyView wsCurrent
+
+    cmd <- displaymgtCmd
+    safeSpawn cmd []
+    setWallPaper
+
+rescreenMir :: X ()
+rescreenMir = do
+    cmd <- displaymgtCmd
+    safeSpawn cmd ["--mirror"]
+    setWallPaper
+
+rescreenNoE :: X ()
+rescreenNoE = do
+    cmd <- displaymgtCmd
+    safeSpawn cmd ["--noext"]
+    setWallPaper
+
+--------------------------------------------------------------------------------
+-- Wallpaper                                                                  --
+--------------------------------------------------------------------------------
+
+setWallPaper :: X ()
+setWallPaper = do
+    configDir <- asks (cfgDir . directories)
+    safeSpawn "feh" ["--bg-fill", configDir </> wallpaperFile]
 
 --------------------------------------------------------------------------------
 -- Auto Startup                                                               --
@@ -300,4 +391,4 @@ myStartupHook scrCnt = do
     -- windows $ W.greedyView wsOne
 
     -- liftIO $ threadDelay 1000000
-    spawn cmdSetWallpaper
+    setWallPaper
