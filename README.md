@@ -81,4 +81,8 @@ pixels to realize the displayed information multiplier?
 
 ### XMonad Version Compatibility
 
-For XMonad `>=0.17.1`, my libraries `actionQueue` and `BorderPerWindow` have been released in `xmonad-contrib`, and the `xmonad.hs` file works out of the box. For XMonad `==0.15` or `==0.17.0`, one needs to use config in directory `0.15/`, i.e., `cp -r 0.15/* ~/.xmonad/`, to compile.
+For XMonad `>=0.17.1`, my library
+[BorderPerWindow](https://github.com/xmonad/xmonad-contrib/blob/master/XMonad/Hooks/BorderPerWindow.hs)
+have been released in `xmonad-contrib`, and the `xmonad.hs` file works out of
+the box. For XMonad `==0.15` or `==0.17.0`, one needs to use config in
+directory `0.15/`, i.e., `cp -r 0.15/* ~/.xmonad/`, to compile.
